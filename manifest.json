@@ -1,0 +1,10 @@
+{
+  "name": "Cinq Rois - Compteur",
+  "short_name": "Cinq Rois",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0b6f9f",
+  "theme_color": "#0b6f9f",
+  "orientation": "portrait",
+  "icons": []
+}
