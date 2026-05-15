@@ -820,7 +820,9 @@
       const round = state.currentRound;
       $("roundLabel").textContent = `${round + 1} / ${TRUMPS.length}`;
       $("trumpLabel").textContent = TRUMPS[round];
-      $("firstPlayerLabel").textContent = state.playOrder[0] || "";
+
+      const rotatedOrder = rotatePlayers(state.playOrder, round % state.playOrder.length);
+      $("firstPlayerLabel").textContent = rotatedOrder[0] || "";
 
       if (editingRoundIndex !== null) {
         $("nextRoundBtn").textContent = "Enregistrer les modifications";
@@ -835,7 +837,7 @@
       const wrap = $("scoreInputs");
       wrap.innerHTML = "";
 
-      state.playOrder.forEach((name, index) => {
+      rotatedOrder.forEach((name, index) => {
         const card = document.createElement("div");
         card.className = "score-card";
         card.innerHTML = `
