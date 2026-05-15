@@ -1,6 +1,6 @@
 {
   "name": "Cinq Rois - Compteur",
-  "short_name": "Cinq Rois",
+  "short_name": "Scores - 5 Rois",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#0b6f9f",
