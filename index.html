@@ -461,6 +461,14 @@
         <div class="warning">Inscris les joueurs dans le sens des aiguilles d’une montre autour de la table.</div>
         <div id="playersInputs" class="players-list"></div>
         <div id="setupError" class="error"></div>
+
+        <div id="selectedFirstPlayerCard" class="card soft" style="display:none;margin-top:14px;">
+          <p class="hint" style="margin-top:0;">
+            Premier joueur sélectionné :
+            <strong id="selectedFirstPlayerName"></strong>
+          </p>
+          <div id="selectedOrderList" class="order-list"></div>
+        </div>
       </div>
 
       <div class="actions">
@@ -686,6 +694,7 @@
 
     function closeRandomModal() {
       $("randomModal").classList.remove("active");
+      renderSelectedFirstPlayer();
     }
 
     function rollFirstPlayer() {
@@ -729,6 +738,26 @@
     function renderChosenOrder() {
       const wrap = $("chosenOrder");
       wrap.innerHTML = "";
+      state.playOrder.forEach((name, i) => {
+        const div = document.createElement("div");
+        div.className = "order-item";
+        div.innerHTML = `<span>${i === 0 ? "👑 " : ""}${name}</span><span>${i + 1}</span>`;
+        wrap.appendChild(div);
+      });
+    }
+
+    function renderSelectedFirstPlayer() {
+      if (!state.playOrder.length) {
+        $("selectedFirstPlayerCard").style.display = "none";
+        return;
+      }
+
+      $("selectedFirstPlayerCard").style.display = "block";
+      $("selectedFirstPlayerName").textContent = state.playOrder[0];
+
+      const wrap = $("selectedOrderList");
+      wrap.innerHTML = "";
+
       state.playOrder.forEach((name, i) => {
         const div = document.createElement("div");
         div.className = "order-item";
