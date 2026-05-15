@@ -38,7 +38,8 @@
 
     body {
       min-height: 100vh;
-      padding: env(safe-area-inset-top) 14px env(safe-area-inset-bottom);
+      padding: env(safe-area-inset-top) 10px env(safe-area-inset-bottom);
+      overflow-x: hidden;
     }
 
     button,
@@ -65,13 +66,13 @@
     .screen {
       display: none;
       flex: 1;
-      padding: 18px 0 28px;
+      padding: 10px 0 16px;
     }
 
     .screen.active {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 9px;
     }
 
     .hero {
@@ -100,8 +101,8 @@
 
     .card {
       background: var(--card-bg);
-      border-radius: var(--radius);
-      padding: 18px;
+      border-radius: 18px;
+      padding: 12px;
       box-shadow: var(--shadow);
       border: 2px solid rgba(255, 214, 90, .65);
     }
@@ -151,11 +152,11 @@
 
     .btn {
       width: 100%;
-      min-height: 56px;
-      border-radius: 18px;
-      padding: 14px 16px;
+      min-height: 46px;
+      border-radius: 15px;
+      padding: 10px 14px;
       font-weight: 950;
-      font-size: 18px;
+      font-size: 16px;
       color: white;
       background: linear-gradient(180deg, #ef244e, var(--red-main));
       box-shadow: 0 7px 0 #951129, 0 12px 24px rgba(0,0,0,.25);
@@ -208,11 +209,11 @@
     input,
     select {
       width: 100%;
-      min-height: 52px;
+      min-height: 42px;
       border: 2px solid var(--border-soft);
-      border-radius: 16px;
-      padding: 12px 14px;
-      font-size: 18px;
+      border-radius: 13px;
+      padding: 8px 12px;
+      font-size: 16px;
       background: white;
     }
 
@@ -226,7 +227,8 @@
       margin: 0;
       color: #385060;
       font-weight: 650;
-      line-height: 1.35;
+      line-height: 1.2;
+      font-size: 14px;
     }
 
     .warning {
@@ -241,8 +243,8 @@
     .players-list {
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      margin-top: 14px;
+      gap: 7px;
+      margin-top: 8px;
     }
 
     .player-row {
@@ -288,13 +290,13 @@
     .round-header {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px;
+      gap: 7px;
     }
 
     .info-box {
       background: white;
-      border-radius: 18px;
-      padding: 14px;
+      border-radius: 15px;
+      padding: 9px;
       border: 2px solid var(--yellow-main);
       text-align: center;
       box-shadow: 0 8px 18px rgba(0,0,0,.16);
@@ -311,16 +313,16 @@
 
     .info-box strong {
       display: block;
-      margin-top: 4px;
+      margin-top: 2px;
       color: var(--red-main);
-      font-size: 22px;
+      font-size: 19px;
       line-height: 1.1;
     }
 
     .score-card {
       background: white;
-      border-radius: 18px;
-      padding: 14px;
+      border-radius: 15px;
+      padding: 9px;
       border: 2px solid var(--border-soft);
       box-shadow: 0 8px 20px rgba(0,0,0,.12);
     }
@@ -329,21 +331,23 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       font-weight: 950;
-      margin-bottom: 8px;
+      margin-bottom: 5px;
+      font-size: 14px;
     }
 
     .score-card input {
       text-align: center;
-      font-size: 24px;
+      font-size: 19px;
       font-weight: 950;
+      min-height: 40px;
     }
 
     .actions {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 8px;
       margin-top: auto;
     }
 
