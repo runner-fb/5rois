@@ -505,6 +505,7 @@
       <div class="actions">
         <button class="btn ghost" onclick="openEditRoundModal()">Modifier une manche</button>
         <button id="nextRoundBtn" class="btn" onclick="validateRound()">Manche suivante</button>
+        <button id="returnToGameBtn" class="btn green" onclick="returnToCurrentRound()" style="display:none;">Retour à la partie</button>
       </div>
     </section>
 
@@ -569,6 +570,9 @@
       currentRound: 0,
       scores: []
     };
+
+    let editingRoundIndex = null;
+    let returnRoundIndex = null;
 
     function $(id) {
       return document.getElementById(id);
@@ -784,7 +788,14 @@
       $("roundLabel").textContent = `${round + 1} / ${TRUMPS.length}`;
       $("trumpLabel").textContent = TRUMPS[round];
       $("firstPlayerLabel").textContent = state.playOrder[0] || "";
-      $("nextRoundBtn").textContent = round === TRUMPS.length - 1 ? "Fin de partie" : "Manche suivante";
+
+      if (editingRoundIndex !== null) {
+        $("nextRoundBtn").textContent = "Enregistrer les modifications";
+        $("returnToGameBtn").style.display = "block";
+      } else {
+        $("nextRoundBtn").textContent = round === TRUMPS.length - 1 ? "Fin de partie" : "Manche suivante";
+        $("returnToGameBtn").style.display = "none";
+      }
       $("gameError").classList.remove("active");
 
       const currentScores = state.scores[round] || {};
@@ -839,6 +850,16 @@
       }
 
       state.scores[state.currentRound] = scores;
+
+      if (editingRoundIndex !== null) {
+        saveState();
+        const targetRound = returnRoundIndex;
+        editingRoundIndex = null;
+        returnRoundIndex = null;
+        state.currentRound = targetRound;
+        renderGame();
+        return;
+      }
 
       if (state.currentRound === TRUMPS.length - 1) {
         state.currentRound = TRUMPS.length;
@@ -915,11 +936,22 @@
     }
 
     function editRound(index) {
+      returnRoundIndex = state.currentRound;
+      editingRoundIndex = index;
       state.currentRound = index;
       saveState();
       closeEditRoundModal();
       renderGame();
       showScreen("gameScreen");
+    }
+
+    function returnToCurrentRound() {
+      if (returnRoundIndex !== null) {
+        editingRoundIndex = null;
+        state.currentRound = returnRoundIndex;
+        returnRoundIndex = null;
+        renderGame();
+      }
     }
 
     function renderFinal() {
