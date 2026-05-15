@@ -1,668 +1,951 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>JeKiffe - Emprunts</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b6f9f" />
+  <title>Cinq Rois - Compteur</title>
+
   <style>
     :root {
-      --bg: #f6f7fb;
-      --card: #ffffff;
-      --text: #1f2937;
-      --muted: #6b7280;
-      --line: #e5e7eb;
-      --primary: #2563eb;
-      --primary-dark: #1d4ed8;
-      --success: #16a34a;
-      --danger: #dc2626;
-      --warning: #d97706;
-      --shadow: 0 10px 30px rgba(0,0,0,0.08);
-      --radius: 18px;
+      --bg-main: #0b6f9f;
+      --bg-dark: #063f5f;
+      --red-main: #d7193f;
+      --yellow-main: #ffd65a;
+      --orange-main: #f28c22;
+      --green-main: #32a852;
+      --card-bg: #ffffff;
+      --text-dark: #17212b;
+      --text-light: #ffffff;
+      --border-soft: #d9e2ec;
+      --shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
+      --radius: 22px;
     }
 
     * {
       box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #1387bd 0%, var(--bg-main) 42%, var(--bg-dark) 100%);
+      color: var(--text-dark);
     }
 
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
+      min-height: 100vh;
+      padding: env(safe-area-inset-top) 14px env(safe-area-inset-bottom);
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+      touch-action: manipulation;
     }
 
     .app {
-      max-width: 760px;
+      width: 100%;
+      max-width: 520px;
       margin: 0 auto;
       min-height: 100vh;
-      padding: 20px 16px 40px;
+      display: flex;
+      flex-direction: column;
     }
 
-    .header {
-      margin-bottom: 20px;
+    .screen {
+      display: none;
+      flex: 1;
+      padding: 18px 0 28px;
     }
 
-    .title {
+    .screen.active {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .hero {
+      min-height: 80vh;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .logo-title {
       margin: 0;
-      font-size: 28px;
-      font-weight: 700;
+      color: var(--yellow-main);
+      font-size: clamp(42px, 13vw, 68px);
+      line-height: 0.95;
+      font-weight: 950;
+      text-shadow: 4px 4px 0 var(--red-main), 0 8px 18px rgba(0, 0, 0, .32);
+      letter-spacing: -1px;
     }
 
     .subtitle {
-      margin: 8px 0 0;
-      color: var(--muted);
-      font-size: 15px;
-      line-height: 1.4;
+      color: white;
+      opacity: .95;
+      margin: 10px 0 0;
+      font-size: 18px;
+      font-weight: 700;
     }
 
     .card {
-      background: var(--card);
+      background: var(--card-bg);
       border-radius: var(--radius);
-      box-shadow: var(--shadow);
       padding: 18px;
-      border: 1px solid var(--line);
-      margin-bottom: 18px;
+      box-shadow: var(--shadow);
+      border: 2px solid rgba(255, 214, 90, .65);
     }
 
-    .label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: 700;
-      font-size: 14px;
+    .card.soft {
+      box-shadow: 0 8px 20px rgba(0,0,0,.14);
+      border-color: var(--border-soft);
     }
 
-    .input-row {
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      color: white;
+    }
+
+    .topbar h1 {
+      margin: 0;
+      font-size: 23px;
+      color: var(--yellow-main);
+      text-shadow: 2px 2px 0 var(--red-main);
+    }
+
+    .tiny-btn {
+      min-height: 38px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      color: white;
+      background: rgba(255,255,255,.16);
+      border: 1px solid rgba(255,255,255,.26);
+      font-weight: 800;
+    }
+
+    .btn {
+      width: 100%;
+      min-height: 56px;
+      border-radius: 18px;
+      padding: 14px 16px;
+      font-weight: 950;
+      font-size: 18px;
+      color: white;
+      background: linear-gradient(180deg, #ef244e, var(--red-main));
+      box-shadow: 0 7px 0 #951129, 0 12px 24px rgba(0,0,0,.25);
+      border: 3px solid var(--yellow-main);
+    }
+
+    .btn:active {
+      transform: translateY(4px);
+      box-shadow: 0 3px 0 #951129, 0 8px 16px rgba(0,0,0,.25);
+    }
+
+    .btn.secondary {
+      background: linear-gradient(180deg, #189bd3, #086c9c);
+      box-shadow: 0 7px 0 #064767, 0 12px 24px rgba(0,0,0,.22);
+      border-color: white;
+    }
+
+    .btn.green {
+      background: linear-gradient(180deg, #43bd62, var(--green-main));
+      box-shadow: 0 7px 0 #1d7334, 0 12px 24px rgba(0,0,0,.22);
+      border-color: var(--yellow-main);
+    }
+
+    .btn.ghost {
+      color: var(--text-dark);
+      background: white;
+      border-color: var(--border-soft);
+      box-shadow: 0 6px 0 #c8d5df, 0 10px 18px rgba(0,0,0,.12);
+    }
+
+    .btn:disabled {
+      opacity: .45;
+      filter: grayscale(.7);
+      transform: none;
+      box-shadow: none;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      margin-bottom: 12px;
+    }
+
+    .field label {
+      font-weight: 900;
+      color: var(--bg-dark);
+    }
+
+    input,
+    select {
+      width: 100%;
+      min-height: 52px;
+      border: 2px solid var(--border-soft);
+      border-radius: 16px;
+      padding: 12px 14px;
+      font-size: 18px;
+      background: white;
+    }
+
+    input:focus,
+    select:focus {
+      outline: 3px solid rgba(255, 214, 90, .75);
+      border-color: var(--bg-main);
+    }
+
+    .hint {
+      margin: 0;
+      color: #385060;
+      font-weight: 650;
+      line-height: 1.35;
+    }
+
+    .warning {
+      background: #fff7d4;
+      border: 2px dashed var(--orange-main);
+      border-radius: 16px;
+      padding: 12px;
+      font-weight: 850;
+      color: #5b3500;
+    }
+
+    .players-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .player-row {
       display: grid;
-      grid-template-columns: 1fr auto;
+      grid-template-columns: 40px 1fr;
       gap: 10px;
       align-items: center;
     }
 
-    .text-input {
-      width: 100%;
-      padding: 14px 14px;
-      border: 1px solid var(--line);
+    .badge {
+      width: 40px;
+      height: 40px;
       border-radius: 14px;
-      font-size: 16px;
-      outline: none;
-    }
-
-    .text-input:focus {
-      border-color: var(--primary);
-    }
-
-    .btn {
-      border: none;
-      border-radius: 14px;
-      padding: 14px 16px;
-      font-size: 16px;
-      font-weight: 700;
-      cursor: pointer;
-      color: white;
-      transition: transform 0.12s ease, opacity 0.12s ease;
-    }
-
-    .btn:active {
-      transform: scale(0.98);
-    }
-
-    .btn:disabled {
-      cursor: not-allowed;
-      opacity: 0.6;
-    }
-
-    .btn-primary {
-      background: var(--primary);
-    }
-
-    .btn-primary:hover {
-      background: var(--primary-dark);
-    }
-
-    .btn-success {
-      background: var(--success);
-    }
-
-    .btn-danger {
-      background: var(--danger);
-    }
-
-    .btn-warning {
-      background: var(--warning);
-    }
-
-    .status-box {
-      border-radius: 14px;
-      padding: 14px;
-      background: #f9fafb;
-      border: 1px dashed var(--line);
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.5;
-      margin-top: 14px;
-    }
-
-    .status-box strong {
-      color: var(--text);
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    .view {
-      display: none;
-    }
-
-    .view.active {
-      display: block;
-    }
-
-    .results {
-      margin-top: 12px;
       display: grid;
+      place-items: center;
+      background: var(--bg-main);
+      color: white;
+      font-weight: 950;
+      border: 2px solid var(--yellow-main);
+    }
+
+    .order-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .order-item,
+    .score-item,
+    .rank-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: #f5f9fc;
+      border: 2px solid var(--border-soft);
+      border-radius: 16px;
+      padding: 12px;
+      font-weight: 900;
+    }
+
+    .round-header {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 10px;
     }
 
-    .result-item {
-      padding: 12px 14px;
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      background: #fcfcfd;
-      cursor: pointer;
+    .info-box {
+      background: white;
+      border-radius: 18px;
+      padding: 14px;
+      border: 2px solid var(--yellow-main);
+      text-align: center;
+      box-shadow: 0 8px 18px rgba(0,0,0,.16);
     }
 
-    .result-item:hover {
-      border-color: var(--primary);
-      background: #eff6ff;
+    .info-box small {
+      display: block;
+      color: #587080;
+      font-weight: 900;
+      text-transform: uppercase;
+      font-size: 12px;
+      letter-spacing: .5px;
     }
 
-    .result-main {
-      font-weight: 700;
-      margin-bottom: 4px;
+    .info-box strong {
+      display: block;
+      margin-top: 4px;
+      color: var(--red-main);
+      font-size: 22px;
+      line-height: 1.1;
     }
 
-    .result-sub {
-      font-size: 13px;
-      color: var(--muted);
+    .score-card {
+      background: white;
+      border-radius: 18px;
+      padding: 14px;
+      border: 2px solid var(--border-soft);
+      box-shadow: 0 8px 20px rgba(0,0,0,.12);
     }
 
-    .name {
-      font-size: 24px;
-      font-weight: 700;
+    .score-card label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      font-weight: 950;
       margin-bottom: 8px;
     }
 
-    .badge {
-      display: inline-block;
-      width: fit-content;
-      padding: 8px 12px;
-      border-radius: 999px;
-      font-size: 14px;
-      font-weight: 700;
-      color: white;
-      margin-bottom: 14px;
-    }
-
-    .badge-ok {
-      background: var(--success);
-    }
-
-    .badge-ko {
-      background: var(--danger);
-    }
-
-    .motif {
-      margin-top: 10px;
-      padding: 12px 14px;
-      border-radius: 12px;
-      background: #fef2f2;
-      border: 1px solid #fecaca;
-      color: #991b1b;
-      font-size: 14px;
-      line-height: 1.4;
-    }
-
-    .infos {
-      display: grid;
-      gap: 12px;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      margin-top: 16px;
-    }
-
-    .info-item {
-      padding: 14px;
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      background: #fcfcfd;
-    }
-
-    .info-label {
-      font-size: 12px;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      margin-bottom: 6px;
-    }
-
-    .info-value {
-      font-size: 16px;
-      font-weight: 700;
-      line-height: 1.4;
-      word-break: break-word;
+    .score-card input {
+      text-align: center;
+      font-size: 24px;
+      font-weight: 950;
     }
 
     .actions {
-      margin-top: 18px;
       display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: auto;
     }
 
-    .selected-box {
-      margin-top: 14px;
-      padding: 14px;
-      border-radius: 14px;
-      background: #eff6ff;
-      border: 1px solid #bfdbfe;
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      background: rgba(0, 0, 0, .55);
+      z-index: 50;
+      padding: 12px;
     }
 
-    .selected-box strong {
-      display: block;
-      margin-bottom: 6px;
+    .modal-backdrop.active {
+      display: flex;
     }
 
-    .section-title {
+    .modal {
+      width: 100%;
+      max-width: 520px;
+      max-height: 88vh;
+      overflow: auto;
+      background: white;
+      border-radius: 26px;
+      padding: 18px;
+      border: 3px solid var(--yellow-main);
+      box-shadow: var(--shadow);
+    }
+
+    .modal h2 {
       margin: 0 0 12px;
-      font-size: 22px;
-      font-weight: 700;
+      color: var(--red-main);
+      font-size: 25px;
     }
 
-    @media (max-width: 700px) {
-      .input-row {
-        grid-template-columns: 1fr;
-      }
+    .rolling-name {
+      min-height: 86px;
+      display: grid;
+      place-items: center;
+      margin: 14px 0;
+      border-radius: 22px;
+      background: linear-gradient(135deg, var(--bg-main), var(--bg-dark));
+      color: var(--yellow-main);
+      font-size: 34px;
+      font-weight: 950;
+      text-align: center;
+      text-shadow: 3px 3px 0 var(--red-main);
+      border: 3px solid var(--yellow-main);
+    }
 
-      .btn {
-        width: 100%;
-      }
+    .podium {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin: 10px 0;
+    }
 
-      .actions {
-        flex-direction: column;
-      }
+    .podium-card {
+      border-radius: 20px;
+      padding: 16px;
+      text-align: center;
+      font-weight: 950;
+      background: #fff7d4;
+      border: 3px solid var(--yellow-main);
+    }
+
+    .podium-card .place {
+      font-size: 34px;
+    }
+
+    .podium-card .name {
+      font-size: 23px;
+      color: var(--red-main);
+    }
+
+    .podium-card .score {
+      color: var(--bg-dark);
+    }
+
+    .error {
+      color: #b00020;
+      background: #ffe8ee;
+      border: 2px solid #ffb3c1;
+      border-radius: 14px;
+      padding: 10px;
+      font-weight: 850;
+      display: none;
+    }
+
+    .error.active {
+      display: block;
     }
   </style>
 </head>
+
 <body>
-  <div class="app">
+  <main class="app">
+    <section id="homeScreen" class="screen hero active">
+      <div class="card">
+        <h1 class="logo-title">Cinq<br>Rois</h1>
+        <p class="subtitle">Compteur de score mobile</p>
+      </div>
+      <button class="btn" onclick="goSetup()">Cinq Rois</button>
+      <button id="resumeBtn" class="btn secondary" onclick="resumeGame()" style="display:none;">Reprendre la partie</button>
+    </section>
 
-  <header class="header">
-    <h1 class="title">Gestion des emprunts</h1>
-    <p class="subtitle" id="headerSubtitle">
-      Recherche un adhérent pour commencer.
-    </p>
-  </header>
-
-  <!-- ========================= -->
-  <!-- RECHERCHE ADHERENT -->
-  <!-- ========================= -->
-  <section id="viewAdherent" class="view active">
-    <div class="card">
-      <h2 class="section-title">Rechercher un adhérent</h2>
-
-      <div class="input-row">
-        <input id="adherentInput" class="text-input"
-          placeholder="Nom / prénom ou scan"
-          oninput="rechercheAutoAdherent()"
-          onkeydown="if(event.key==='Enter'){rechercherAdherentUnique();}">
-        <button class="btn btn-primary" onclick="rechercherAdherentUnique()">Rechercher</button>
+    <section id="setupScreen" class="screen">
+      <div class="topbar">
+        <button class="tiny-btn" onclick="goHome()">← Accueil</button>
+        <h1>Joueurs</h1>
+        <span></span>
       </div>
 
-      <div id="adherentResults" class="results hidden"></div>
+      <div class="card">
+        <div class="field">
+          <label for="playerCount">Nombre de joueurs</label>
+          <select id="playerCount" onchange="renderPlayerInputs()">
+            <option value="2">2 joueurs</option>
+            <option value="3">3 joueurs</option>
+            <option value="4" selected>4 joueurs</option>
+            <option value="5">5 joueurs</option>
+            <option value="6">6 joueurs</option>
+            <option value="7">7 joueurs</option>
+          </select>
+        </div>
 
-      <div class="actions">
-        <button class="btn btn-primary" onclick="ouvrirRetourAccueil()">Retour de jeux</button>
-      </div>
-
-      <div id="statusAdherent" class="status-box"></div>
-    </div>
-  </section>
-
-  <!-- ========================= -->
-  <!-- FICHE ADHERENT -->
-  <!-- ========================= -->
-  <section id="viewFiche" class="view">
-    <div class="card">
-      <h2 class="section-title">Fiche adhérent</h2>
-
-      <div id="nomComplet" class="name"></div>
-      <div id="badgeStatut" class="badge"></div>
-      <div id="motifBlocage" class="motif hidden"></div>
-
-      <div class="infos">
-        <div class="info-item"><div class="info-label">Emprunts</div><div id="empruntsEnCours"></div></div>
-        <div class="info-item"><div class="info-label">Statut</div><div id="statutEmprunt"></div></div>
-        <div class="info-item"><div class="info-label">Jeux</div><div id="jeuxEnCours"></div></div>
-        <div class="info-item"><div class="info-label">Retards</div><div id="nbRetards"></div></div>
+        <div class="warning">Inscris les joueurs dans le sens des aiguilles d’une montre autour de la table.</div>
+        <div id="playersInputs" class="players-list"></div>
+        <div id="setupError" class="error"></div>
       </div>
 
       <div class="actions">
-        <button id="btnChoisirJeu" class="btn btn-success hidden" onclick="ouvrirVueJeu()">Emprunter</button>
-        <button class="btn btn-warning" onclick="retourRechercheAdherent()">Changer</button>
+        <button class="btn" onclick="openRandomModal()">Définir le premier joueur</button>
+        <button id="startGameBtn" class="btn green" onclick="startGame()" disabled>Commencer la partie</button>
+      </div>
+    </section>
+
+    <section id="gameScreen" class="screen">
+      <div class="topbar">
+        <button class="tiny-btn" onclick="confirmNewGame()">Nouvelle</button>
+        <h1>Partie</h1>
+        <button class="tiny-btn" onclick="openScoresModal()">Scores</button>
       </div>
 
-      <div id="statusFiche" class="status-box"></div>
-    </div>
-  </section>
-
-  <!-- ========================= -->
-  <!-- RECHERCHE JEU -->
-  <!-- ========================= -->
-  <section id="viewJeu" class="view">
-    <div class="card">
-      <h2 class="section-title">Choisir un jeu</h2>
-
-      <div class="input-row">
-        <input id="jeuInput" class="text-input"
-          placeholder="Nom ou scan"
-          oninput="rechercheAutoJeu()"
-          onkeydown="if(event.key==='Enter'){rechercherJeuUnique();}">
-        <button class="btn btn-primary" onclick="rechercherJeuUnique()">Rechercher</button>
+      <div class="round-header">
+        <div class="info-box">
+          <small>Manche</small>
+          <strong id="roundLabel">1 / 11</strong>
+        </div>
+        <div class="info-box">
+          <small>Atout</small>
+          <strong id="trumpLabel">3</strong>
+        </div>
       </div>
 
-      <div id="jeuResults" class="results hidden"></div>
-
-      <div id="jeuSelection" class="selected-box hidden">
-        <strong id="jeuNomSelection"></strong>
-        <span id="jeuEtatSelection"></span>
+      <div class="card soft">
+        <p class="hint">Premier joueur : <strong id="firstPlayerLabel"></strong></p>
       </div>
 
-      <div id="exemplairesBloc" class="hidden">
-        <div id="exemplairesZone" class="results"></div>
-      </div>
+      <div id="scoreInputs" class="players-list"></div>
+      <div id="gameError" class="error"></div>
 
       <div class="actions">
-        <button id="btnValiderEmprunt" class="btn btn-success hidden" onclick="validerEmprunt()">Valider</button>
-        <button class="btn btn-warning" onclick="retourFicheAdherent()">Retour</button>
+        <button class="btn ghost" onclick="openEditRoundModal()">Modifier une manche</button>
+        <button id="nextRoundBtn" class="btn" onclick="validateRound()">Manche suivante</button>
+      </div>
+    </section>
+
+    <section id="finalScreen" class="screen">
+      <div class="topbar">
+        <span></span>
+        <h1>Classement</h1>
+        <span></span>
       </div>
 
-      <div id="statusJeu" class="status-box"></div>
-    </div>
-  </section>
+      <div class="card">
+        <h2 style="margin-top:0;color:var(--red-main);">Podium</h2>
+        <div id="podium" class="podium"></div>
+      </div>
 
-  <!-- ========================= -->
-  <!-- RETOUR ACCUEIL -->
-  <!-- ========================= -->
-  <section id="viewRetourAccueil" class="view">
-    <div class="card">
-      <h2 class="section-title">Retour</h2>
+      <div class="card soft">
+        <h2 style="margin-top:0;color:var(--bg-dark);">Classement complet</h2>
+        <div id="finalRanking" class="order-list"></div>
+      </div>
 
+      <button class="btn" onclick="newGame()">Nouvelle partie</button>
+    </section>
+  </main>
+
+  <div id="randomModal" class="modal-backdrop">
+    <div class="modal">
+      <h2>Tirage du premier joueur</h2>
+      <p class="hint">Les prénoms défilent, puis l’appli choisit un joueur au hasard.</p>
+      <div id="rollingName" class="rolling-name">?</div>
+      <div id="chosenOrder" class="order-list"></div>
       <div class="actions">
-        <button class="btn btn-primary" onclick="ouvrirRetourUnique()">Retour simple</button>
-        <button class="btn btn-primary" onclick="ouvrirRetourMultiple()">Retour multiple</button>
+        <button id="rollBtn" class="btn" onclick="rollFirstPlayer()">Lancer le tirage</button>
+        <button class="btn ghost" onclick="closeRandomModal()">Fermer</button>
       </div>
     </div>
-  </section>
+  </div>
 
-  <!-- ========================= -->
-  <!-- RETOUR UNIQUE -->
-  <!-- ========================= -->
-  <section id="viewRetourUnique" class="view">
-    <div class="card">
-      <h2 class="section-title">Retour d’un jeu</h2>
-
-      <input id="retourInput" class="text-input"
-        placeholder="Nom jeu ou scan"
-        oninput="rechercheAutoRetourUnique()">
-
-      <div id="retourResults" class="results hidden"></div>
-      <div id="retourStatus" class="status-box"></div>
-
-      <div class="actions">
-        <button class="btn btn-warning" onclick="ouvrirRetourAccueil()">Retour</button>
-      </div>
+  <div id="scoresModal" class="modal-backdrop">
+    <div class="modal">
+      <h2>Scores provisoires</h2>
+      <div id="scoresList" class="order-list"></div>
+      <button class="btn ghost" onclick="closeScoresModal()" style="margin-top:14px;">Fermer</button>
     </div>
-  </section>
+  </div>
 
-  <!-- ========================= -->
-  <!-- CONFIRMATION -->
-  <!-- ========================= -->
-  <section id="viewRetourConfirm" class="view">
-    <div class="card">
-      <h2 class="section-title">Confirmer</h2>
-
-      <div class="infos">
-        <div class="info-item"><div class="info-label">Jeu</div><div id="retourConfirmJeu"></div></div>
-        <div class="info-item"><div class="info-label">Exemplaire</div><div id="retourConfirmExemplaire"></div></div>
-        <div class="info-item"><div class="info-label">Adhérent</div><div id="retourConfirmAdherent"></div></div>
-        <div class="info-item"><div class="info-label">Retard</div><div id="retourConfirmRetard"></div></div>
-      </div>
-
-      <div class="actions">
-        <button class="btn btn-success" onclick="confirmerRetour()">Confirmer</button>
-        <button class="btn btn-warning" onclick="ouvrirRetourUnique()">Annuler</button>
-      </div>
+  <div id="editModal" class="modal-backdrop">
+    <div class="modal">
+      <h2>Modifier une manche</h2>
+      <div id="editRoundsList" class="order-list"></div>
+      <button class="btn ghost" onclick="closeEditRoundModal()" style="margin-top:14px;">Fermer</button>
     </div>
-  </section>
-
-  <!-- ========================= -->
-  <!-- SUCCES -->
-  <!-- ========================= -->
-  <section id="viewRetourSucces" class="view">
-    <div class="card">
-      <h2 class="section-title">Retour effectué</h2>
-
-      <div id="retourSuccesDetail" class="selected-box"></div>
-
-      <div class="actions">
-        <button class="btn btn-success" onclick="ouvrirRetourUnique()">Autre retour</button>
-        <button class="btn btn-primary" onclick="ouvrirRetourAccueil()">Accueil</button>
-      </div>
-    </div>
-  </section>
-
-</div>
+  </div>
 
   <script>
-  const API_URL = "https://script.google.com/macros/s/AKfycbxvASN1BbWvvwLn2zRg_t_1GgysJaeNk2jJhQMMXHitTdrea8Ub2a3Kq-7pZpBVTMRSLQ/exec";
+    const STORAGE_KEY = "cinq_rois_game_v1";
+    const TRUMPS = ["3", "4", "5", "6", "7", "8", "9", "10", "Valet", "Dame", "Roi"];
 
-let adherentsIndex = [];
-let jeuxIndex = [];
-
-let adherentCourant = null;
-let jeuCourant = null;
-let exemplaireChoisi = null;
-
-let retourCourant = null;
-let timerRetourUnique = null;
-
-
-// ============================
-// INIT
-// ============================
-
-async function chargerIndex() {
-  try {
-    const resAdh = await fetch(API_URL + "?action=getAdherentsIndex");
-    adherentsIndex = (await resAdh.json()).data || [];
-
-    const resJeux = await fetch(API_URL + "?action=getJeuxIndex");
-    jeuxIndex = (await resJeux.json()).data || [];
-
-  } catch (e) {
-    console.error(e);
-  }
-}
-
-
-// ============================
-// UI
-// ============================
-
-function setStatus(id, title, text) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.innerHTML = "<strong>" + title + "</strong><br>" + text;
-}
-
-function showView(viewId) {
-  document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
-  document.getElementById(viewId).classList.add("active");
-}
-
-
-// ============================
-// RETOUR UNIQUE
-// ============================
-
-function rechercheAutoRetourUnique() {
-  clearTimeout(timerRetourUnique);
-
-  timerRetourUnique = setTimeout(() => {
-    const input = document.getElementById("retourInput").value.trim();
-    if (input.length >= 2) rechercherRetourUnique();
-  }, 300);
-}
-
-
-async function rechercherRetourUnique() {
-  const input = document.getElementById("retourInput").value.trim();
-
-  if (!input) {
-    setStatus("retourStatus", "Erreur", "Saisis une valeur.");
-    return;
-  }
-
-  setStatus("retourStatus", "Recherche", "...");
-
-  // ========= CAS EXEMPLAIRE =========
-  if (input.includes("-")) {
-    traiterRetourExemplaire(input);
-    return;
-  }
-
-  // ========= CAS NOM =========
-  const query = input.toLowerCase();
-
-  const results = jeuxIndex.filter(j =>
-    j.nom_jeu.toLowerCase().includes(query)
-  );
-
-  if (results.length === 0) {
-    setStatus("retourStatus", "Aucun résultat", "Aucun jeu.");
-    return;
-  }
-
-  if (results.length === 1) {
-    chargerEmpruntsJeu(results[0].id_jeu);
-    return;
-  }
-
-  const box = document.getElementById("retourResults");
-  box.innerHTML = "";
-
-  results.forEach(j => {
-    const div = document.createElement("div");
-    div.className = "result-item";
-    div.textContent = j.nom_jeu;
-
-    div.onclick = () => {
-      chargerEmpruntsJeu(j.id_jeu);
-      box.classList.add("hidden");
+    let state = {
+      players: [],
+      firstPlayerIndex: null,
+      playOrder: [],
+      currentRound: 0,
+      scores: []
     };
 
-    box.appendChild(div);
-  });
+    function $(id) {
+      return document.getElementById(id);
+    }
 
-  box.classList.remove("hidden");
-}
+    function showScreen(id) {
+      document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+      $(id).classList.add("active");
+      updateResumeButton();
+    }
 
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      updateResumeButton();
+    }
 
-// ============================
-// CHARGER EMPRUNTS
-// ============================
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch (e) {
+        return null;
+      }
+    }
 
-async function chargerEmpruntsJeu(idJeu) {
-  setStatus("retourStatus", "Chargement", "...");
+    function updateResumeButton() {
+      const saved = loadState();
+      $("resumeBtn").style.display = saved && saved.players && saved.players.length ? "block" : "none";
+    }
 
-  const res = await fetch(API_URL + "?action=getEmpruntsActifsByJeu&id_jeu=" + idJeu);
-  const data = await res.json();
+    function goHome() {
+      showScreen("homeScreen");
+    }
 
-  const box = document.getElementById("retourResults");
-  box.innerHTML = "";
+    function goSetup() {
+      state = {
+        players: [],
+        firstPlayerIndex: null,
+        playOrder: [],
+        currentRound: 0,
+        scores: []
+      };
+      renderPlayerInputs();
+      showScreen("setupScreen");
+    }
 
-  if (!data.emprunts || data.emprunts.length === 0) {
-    setStatus("retourStatus", "Aucun emprunt", "");
-    return;
-  }
+    function resumeGame() {
+      const saved = loadState();
+      if (!saved) return;
+      state = saved;
+      if (state.currentRound >= TRUMPS.length) {
+        renderFinal();
+        showScreen("finalScreen");
+      } else {
+        renderGame();
+        showScreen("gameScreen");
+      }
+    }
 
-  // ✅ 1 seul → direct
-  if (data.emprunts.length === 1) {
-    traiterRetourExemplaire(data.emprunts[0].id_exemplaire);
-    return;
-  }
+    function renderPlayerInputs() {
+      const count = Number($("playerCount").value);
+      const wrap = $("playersInputs");
+      wrap.innerHTML = "";
+      for (let i = 0; i < count; i++) {
+        const row = document.createElement("div");
+        row.className = "player-row";
+        row.innerHTML = `
+          <div class="badge">${i + 1}</div>
+          <input id="player_${i}" type="text" placeholder="Prénom joueur ${i + 1}" autocomplete="off" oninput="resetFirstPlayer()">
+        `;
+        wrap.appendChild(row);
+      }
+      $("startGameBtn").disabled = true;
+      $("setupError").classList.remove("active");
+    }
 
-  // ⚠️ plusieurs → choix
-  data.emprunts.forEach(e => {
-    const div = document.createElement("div");
-    div.className = "result-item";
-    div.innerHTML = `
-      <strong>${e.nom_adherent}</strong><br>
-      ${e.id_exemplaire}
-    `;
+    function resetFirstPlayer() {
+      state.firstPlayerIndex = null;
+      state.playOrder = [];
+      $("startGameBtn").disabled = true;
+    }
 
-    div.onclick = () => {
-      traiterRetourExemplaire(e.id_exemplaire);
-    };
+    function getSetupPlayers() {
+      const count = Number($("playerCount").value);
+      const players = [];
+      for (let i = 0; i < count; i++) {
+        const name = $("player_" + i).value.trim();
+        players.push(name);
+      }
+      return players;
+    }
 
-    box.appendChild(div);
-  });
+    function showSetupError(msg) {
+      $("setupError").textContent = msg;
+      $("setupError").classList.add("active");
+    }
 
-  box.classList.remove("hidden");
-}
+    function validatePlayers() {
+      const players = getSetupPlayers();
+      if (players.some(p => !p)) {
+        showSetupError("Tous les prénoms doivent être remplis.");
+        return null;
+      }
+      const normalized = players.map(p => p.toLowerCase());
+      const unique = new Set(normalized);
+      if (unique.size !== players.length) {
+        showSetupError("Deux joueurs ont le même prénom. Ajoute une initiale pour éviter le bazar.");
+        return null;
+      }
+      $("setupError").classList.remove("active");
+      return players;
+    }
 
+    function openRandomModal() {
+      const players = validatePlayers();
+      if (!players) return;
+      state.players = players;
+      $("rollingName").textContent = "?";
+      $("chosenOrder").innerHTML = "";
+      $("rollBtn").disabled = false;
+      $("randomModal").classList.add("active");
+    }
 
-// ============================
-// TRAITER EXEMPLAIRE
-// ============================
+    function closeRandomModal() {
+      $("randomModal").classList.remove("active");
+    }
 
-async function traiterRetourExemplaire(idEx) {
-  const res = await fetch(API_URL + "?action=getEmpruntActifByExemplaire&id_exemplaire=" + idEx);
-  const data = await res.json();
+    function rollFirstPlayer() {
+      const players = state.players;
+      if (!players.length) return;
+      $("rollBtn").disabled = true;
 
-  if (!data.has_active_emprunt) {
-    setStatus("retourStatus", "Erreur", "Pas emprunté.");
-    return;
-  }
+      let ticks = 0;
+      const maxTicks = 26 + Math.floor(Math.random() * 10);
+      const interval = setInterval(() => {
+        const fakeIndex = ticks % players.length;
+        $("rollingName").textContent = players[fakeIndex];
+        ticks++;
 
-  retourCourant = idEx;
+        if (ticks >= maxTicks) {
+          clearInterval(interval);
+          const chosenIndex = cryptoRandomIndex(players.length);
+          state.firstPlayerIndex = chosenIndex;
+          state.playOrder = rotatePlayers(players, chosenIndex);
+          $("rollingName").textContent = players[chosenIndex];
+          renderChosenOrder();
+          $("startGameBtn").disabled = false;
+          saveState();
+        }
+      }, 90);
+    }
 
-  document.getElementById("confirmTexte").textContent =
-    "Retour de " + idEx + " (" + data.nom_adherent + ")";
+    function cryptoRandomIndex(max) {
+      if (window.crypto && window.crypto.getRandomValues) {
+        const array = new Uint32Array(1);
+        window.crypto.getRandomValues(array);
+        return array[0] % max;
+      }
+      return Math.floor(Math.random() * max);
+    }
 
-  showView("viewConfirm");
-}
+    function rotatePlayers(players, startIndex) {
+      return players.slice(startIndex).concat(players.slice(0, startIndex));
+    }
 
+    function renderChosenOrder() {
+      const wrap = $("chosenOrder");
+      wrap.innerHTML = "";
+      state.playOrder.forEach((name, i) => {
+        const div = document.createElement("div");
+        div.className = "order-item";
+        div.innerHTML = `<span>${i === 0 ? "👑 " : ""}${name}</span><span>${i + 1}</span>`;
+        wrap.appendChild(div);
+      });
+    }
 
-// ============================
-// CONFIRMER
-// ============================
+    function startGame() {
+      if (!state.playOrder.length) {
+        showSetupError("Il faut d’abord définir le premier joueur.");
+        return;
+      }
+      state.currentRound = 0;
+      state.scores = [];
+      saveState();
+      closeRandomModal();
+      renderGame();
+      showScreen("gameScreen");
+    }
 
-async function confirmerRetour() {
-  await fetch(API_URL + "?action=retourJeuByExemplaire&id_exemplaire=" + retourCourant);
+    function renderGame() {
+      const round = state.currentRound;
+      $("roundLabel").textContent = `${round + 1} / ${TRUMPS.length}`;
+      $("trumpLabel").textContent = TRUMPS[round];
+      $("firstPlayerLabel").textContent = state.playOrder[0] || "";
+      $("nextRoundBtn").textContent = round === TRUMPS.length - 1 ? "Fin de partie" : "Manche suivante";
+      $("gameError").classList.remove("active");
 
-  document.getElementById("successTexte").textContent =
-    "Retour effectué : " + retourCourant;
+      const currentScores = state.scores[round] || {};
+      const wrap = $("scoreInputs");
+      wrap.innerHTML = "";
 
-  showView("viewSuccess");
-}
+      state.playOrder.forEach((name, index) => {
+        const card = document.createElement("div");
+        card.className = "score-card";
+        card.innerHTML = `
+          <label>
+            <span>${index + 1}. ${name}</span>
+            ${index === 0 ? "<span>👑</span>" : ""}
+          </label>
+          <input id="score_${cssEscape(name)}" type="number" inputmode="numeric" min="0" step="1" placeholder="Score" value="${currentScores[name] ?? ""}" oninput="cleanScoreInput(this)">
+        `;
+        wrap.appendChild(card);
+      });
+    }
 
+    function cssEscape(value) {
+      return value.replace(/[^a-zA-Z0-9_-]/g, "_");
+    }
 
-// ============================
+    function cleanScoreInput(input) {
+      input.value = input.value.replace(/[^0-9]/g, "");
+    }
 
-window.onload = chargerIndex;
+    function showGameError(msg) {
+      $("gameError").textContent = msg;
+      $("gameError").classList.add("active");
+    }
 
-</script>
-  
+    function collectRoundScores() {
+      const result = {};
+      for (const name of state.playOrder) {
+        const input = $("score_" + cssEscape(name));
+        const raw = input.value.trim();
+        if (raw === "") return null;
+        const n = Number(raw);
+        if (!Number.isInteger(n) || n < 0) return null;
+        result[name] = n;
+      }
+      return result;
+    }
+
+    function validateRound() {
+      const scores = collectRoundScores();
+      if (!scores) {
+        showGameError("Tous les scores doivent être remplis avec un nombre entier positif ou zéro.");
+        return;
+      }
+
+      state.scores[state.currentRound] = scores;
+
+      if (state.currentRound === TRUMPS.length - 1) {
+        state.currentRound = TRUMPS.length;
+        saveState();
+        renderFinal();
+        showScreen("finalScreen");
+        return;
+      }
+
+      state.currentRound++;
+      saveState();
+      renderGame();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function getTotals() {
+      const totals = {};
+      state.players.forEach(p => totals[p] = 0);
+      state.scores.forEach(round => {
+        if (!round) return;
+        Object.entries(round).forEach(([name, score]) => {
+          totals[name] = (totals[name] || 0) + Number(score || 0);
+        });
+      });
+      return totals;
+    }
+
+    function getRanking() {
+      const totals = getTotals();
+      return Object.entries(totals)
+        .map(([name, total]) => ({ name, total }))
+        .sort((a, b) => a.total - b.total || a.name.localeCompare(b.name, "fr"));
+    }
+
+    function openScoresModal() {
+      const list = $("scoresList");
+      list.innerHTML = "";
+      getRanking().forEach((item, i) => {
+        const div = document.createElement("div");
+        div.className = "rank-item";
+        div.innerHTML = `<span>${i + 1}. ${item.name}</span><strong>${item.total} pts</strong>`;
+        list.appendChild(div);
+      });
+      $("scoresModal").classList.add("active");
+    }
+
+    function closeScoresModal() {
+      $("scoresModal").classList.remove("active");
+    }
+
+    function openEditRoundModal() {
+      const list = $("editRoundsList");
+      list.innerHTML = "";
+      const max = Math.min(state.currentRound, TRUMPS.length - 1);
+
+      if (max === 0 && !state.scores[0]) {
+        list.innerHTML = `<p class="hint">Aucune manche validée pour le moment.</p>`;
+      } else {
+        for (let i = 0; i <= max; i++) {
+          if (!state.scores[i]) continue;
+          const btn = document.createElement("button");
+          btn.className = "btn ghost";
+          btn.textContent = `Modifier manche ${i + 1} - Atout ${TRUMPS[i]}`;
+          btn.onclick = () => editRound(i);
+          list.appendChild(btn);
+        }
+      }
+
+      $("editModal").classList.add("active");
+    }
+
+    function closeEditRoundModal() {
+      $("editModal").classList.remove("active");
+    }
+
+    function editRound(index) {
+      state.currentRound = index;
+      saveState();
+      closeEditRoundModal();
+      renderGame();
+      showScreen("gameScreen");
+    }
+
+    function renderFinal() {
+      const ranking = getRanking();
+      const podium = $("podium");
+      podium.innerHTML = "";
+      const medals = ["🥇", "🥈", "🥉"];
+      ranking.slice(0, 3).forEach((item, i) => {
+        const div = document.createElement("div");
+        div.className = "podium-card";
+        div.innerHTML = `
+          <div class="place">${medals[i]}</div>
+          <div class="name">${item.name}</div>
+          <div class="score">${item.total} points</div>
+        `;
+        podium.appendChild(div);
+      });
+
+      const final = $("finalRanking");
+      final.innerHTML = "";
+      ranking.forEach((item, i) => {
+        const div = document.createElement("div");
+        div.className = "rank-item";
+        div.innerHTML = `<span>${i + 1}. ${item.name}</span><strong>${item.total} pts</strong>`;
+        final.appendChild(div);
+      });
+    }
+
+    function confirmNewGame() {
+      if (confirm("Supprimer la partie en cours et recommencer ?")) {
+        newGame();
+      }
+    }
+
+    function newGame() {
+      localStorage.removeItem(STORAGE_KEY);
+      state = {
+        players: [],
+        firstPlayerIndex: null,
+        playOrder: [],
+        currentRound: 0,
+        scores: []
+      };
+      renderPlayerInputs();
+      showScreen("homeScreen");
+    }
+
+    document.querySelectorAll(".modal-backdrop").forEach(backdrop => {
+      backdrop.addEventListener("click", e => {
+        if (e.target === backdrop) backdrop.classList.remove("active");
+      });
+    });
+
+    renderPlayerInputs();
+    updateResumeButton();
+  </script>
 </body>
 </html>
