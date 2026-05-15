@@ -431,14 +431,16 @@
 
     .home-image {
   width: 100%;
-  aspect-ratio: 1 / 1;
-  object-fit: cover;
+  max-height: 42vh;
+  object-fit: contain;
   object-position: center;
   display: block;
   margin: 0 auto;
   border-radius: 18px;
-  box-shadow: 0 14px 30px rgba(0,0,0,.28);
-  border: 3px solid rgba(255, 214, 90, .85);
+}
+
+    .home-card {
+  padding: 10px;
 }
 
     .error {
@@ -460,9 +462,8 @@
 <body>
   <main class="app">
     <section id="homeScreen" class="screen hero active">
-      <div class="card">
+      <div class="card home-card">
   <img class="home-image" src="home.png?v=2" alt="Cinq Rois">
-  <p class="subtitle">Compteur de score mobile</p>
 </div>
       <button class="btn" onclick="goSetup()">Lancer une partie</button>
       <button id="resumeBtn" class="btn secondary" onclick="resumeGame()" style="display:none;">Reprendre la partie</button>
