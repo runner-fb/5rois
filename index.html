@@ -434,7 +434,7 @@
         <h1 class="logo-title">Cinq<br>Rois</h1>
         <p class="subtitle">Compteur de score mobile</p>
       </div>
-      <button class="btn" onclick="goSetup()">Cinq Rois</button>
+      <button class="btn" onclick="goSetup()">Lancer une partie</button>
       <button id="resumeBtn" class="btn secondary" onclick="resumeGame()" style="display:none;">Reprendre la partie</button>
     </section>
 
@@ -526,7 +526,16 @@
         <div id="finalRanking" class="order-list"></div>
       </div>
 
-      <button class="btn" onclick="newGame()">Nouvelle partie</button>
+      <div class="card soft">
+        <h2 style="margin-top:0;color:var(--bg-dark);">Historique des parties</h2>
+        <div id="historyList" class="order-list"></div>
+      </div>
+
+      <div class="actions">
+        <button class="btn" onclick="newGame()">Nouvelle partie</button>
+        <button class="btn green" onclick="replaySamePlayers()">Refaire une partie</button>
+        <button class="btn secondary" onclick="replayWithPlayerEdit()">Relancer en ajoutant des joueurs</button>
+      </div>
     </section>
   </main>
 
@@ -561,6 +570,7 @@
 
   <script>
     const STORAGE_KEY = "cinq_rois_game_v1";
+    const HISTORY_KEY = "cinq_rois_history_v1";
     const TRUMPS = ["3", "4", "5", "6", "7", "8", "9", "10", "Valet", "Dame", "Roi"];
 
     let state = {
@@ -639,14 +649,24 @@
       for (let i = 0; i < count; i++) {
         const row = document.createElement("div");
         row.className = "player-row";
+        const existingName = state.players[i] || "";
         row.innerHTML = `
           <div class="badge">${i + 1}</div>
-          <input id="player_${i}" type="text" placeholder="Prénom joueur ${i + 1}" autocomplete="off" oninput="resetFirstPlayer()">
+          <input id="player_${i}" type="text" placeholder="Prénom joueur ${i + 1}" autocomplete="off" value="${escapeHtml(existingName)}" oninput="resetFirstPlayer()">
         `;
         wrap.appendChild(row);
       }
       $("startGameBtn").disabled = true;
       $("setupError").classList.remove("active");
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
     }
 
     function resetFirstPlayer() {
@@ -864,6 +884,7 @@
       if (state.currentRound === TRUMPS.length - 1) {
         state.currentRound = TRUMPS.length;
         saveState();
+        saveFinishedGameToHistory();
         renderFinal();
         showScreen("finalScreen");
         return;
@@ -954,6 +975,72 @@
       }
     }
 
+    function getHistory() {
+      try {
+        return JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveHistory(history) {
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, 30)));
+    }
+
+    function saveFinishedGameToHistory() {
+      const ranking = getRanking();
+      if (!ranking.length) return;
+
+      const signature = JSON.stringify({
+        players: state.players,
+        scores: state.scores
+      });
+
+      const history = getHistory();
+      if (history.some(item => item.signature === signature)) return;
+
+      history.unshift({
+        id: Date.now(),
+        date: new Date().toLocaleString("fr-FR", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit"
+        }),
+        players: [...state.players],
+        winner: ranking[0].name,
+        winnerScore: ranking[0].total,
+        ranking,
+        signature
+      });
+
+      saveHistory(history);
+    }
+
+    function renderHistory() {
+      const wrap = $("historyList");
+      if (!wrap) return;
+
+      const history = getHistory();
+      wrap.innerHTML = "";
+
+      if (!history.length) {
+        wrap.innerHTML = `<p class="hint">Aucune ancienne partie enregistrée.</p>`;
+        return;
+      }
+
+      history.forEach((game, index) => {
+        const div = document.createElement("div");
+        div.className = "rank-item";
+        div.innerHTML = `
+          <span>${index + 1}. ${game.date}<br><strong>🏆 ${game.winner}</strong></span>
+          <strong>${game.winnerScore} pts</strong>
+        `;
+        wrap.appendChild(div);
+      });
+    }
+
     function renderFinal() {
       const ranking = getRanking();
       const podium = $("podium");
@@ -978,6 +1065,8 @@
         div.innerHTML = `<span>${i + 1}. ${item.name}</span><strong>${item.total} pts</strong>`;
         final.appendChild(div);
       });
+
+      renderHistory();
     }
 
     function confirmNewGame() {
@@ -995,8 +1084,48 @@
         currentRound: 0,
         scores: []
       };
+      editingRoundIndex = null;
+      returnRoundIndex = null;
       renderPlayerInputs();
       showScreen("homeScreen");
+    }
+
+    function replaySamePlayers() {
+      const players = [...state.players];
+      state = {
+        players,
+        firstPlayerIndex: null,
+        playOrder: [],
+        currentRound: 0,
+        scores: []
+      };
+      editingRoundIndex = null;
+      returnRoundIndex = null;
+      localStorage.removeItem(STORAGE_KEY);
+      $("playerCount").value = String(players.length);
+      renderPlayerInputs();
+      $("selectedFirstPlayerCard").style.display = "none";
+      $("startGameBtn").disabled = true;
+      showScreen("setupScreen");
+    }
+
+    function replayWithPlayerEdit() {
+      const players = [...state.players];
+      state = {
+        players,
+        firstPlayerIndex: null,
+        playOrder: [],
+        currentRound: 0,
+        scores: []
+      };
+      editingRoundIndex = null;
+      returnRoundIndex = null;
+      localStorage.removeItem(STORAGE_KEY);
+      $("playerCount").value = String(players.length);
+      renderPlayerInputs();
+      $("selectedFirstPlayerCard").style.display = "none";
+      $("startGameBtn").disabled = true;
+      showScreen("setupScreen");
     }
 
     document.querySelectorAll(".modal-backdrop").forEach(backdrop => {
