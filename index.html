@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0b6f9f" />
+  <link rel="manifest" href="manifest.json" />
   <title>Cinq Rois - Compteur</title>
 
   <style>
@@ -1155,6 +1156,14 @@
 
     renderPlayerInputs();
     updateResumeButton();
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("sw.js").catch(err => {
+          console.warn("Service worker non enregistré", err);
+        });
+      });
+    }
   </script>
 </body>
 </html>
