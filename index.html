@@ -82,24 +82,6 @@
       text-align: center;
     }
 
-    .logo-title {
-      margin: 0;
-      color: var(--yellow-main);
-      font-size: clamp(42px, 13vw, 68px);
-      line-height: 0.95;
-      font-weight: 950;
-      text-shadow: 4px 4px 0 var(--red-main), 0 8px 18px rgba(0, 0, 0, .32);
-      letter-spacing: -1px;
-    }
-
-    .subtitle {
-      color: white;
-      opacity: .95;
-      margin: 10px 0 0;
-      font-size: 18px;
-      font-weight: 700;
-    }
-
     .card {
       background: var(--card-bg);
       border-radius: 18px;
@@ -111,6 +93,20 @@
     .card.soft {
       box-shadow: 0 8px 20px rgba(0,0,0,.14);
       border-color: var(--border-soft);
+    }
+
+    .home-card {
+      padding: 10px;
+    }
+
+    .home-image {
+      width: 100%;
+      max-height: 42vh;
+      object-fit: contain;
+      object-position: center;
+      display: block;
+      margin: 0 auto;
+      border-radius: 18px;
     }
 
     .topbar {
@@ -275,7 +271,6 @@
     }
 
     .order-item,
-    .score-item,
     .rank-item {
       display: flex;
       align-items: center;
@@ -349,7 +344,7 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
-      margin-top: auto;
+      margin-top: 8px;
     }
 
     .modal-backdrop {
@@ -429,20 +424,6 @@
       color: var(--bg-dark);
     }
 
-    .home-image {
-  width: 100%;
-  max-height: 42vh;
-  object-fit: contain;
-  object-position: center;
-  display: block;
-  margin: 0 auto;
-  border-radius: 18px;
-}
-
-    .home-card {
-  padding: 10px;
-}
-
     .error {
       color: #b00020;
       background: #ffe8ee;
@@ -463,10 +444,13 @@
   <main class="app">
     <section id="homeScreen" class="screen hero active">
       <div class="card home-card">
-  <img class="home-image" src="home.png?v=2" alt="Cinq Rois">
-</div>
-      <button class="btn" onclick="goSetup()">Lancer une partie</button>
-      <button id="resumeBtn" class="btn secondary" onclick="resumeGame()" style="display:none;">Reprendre la partie</button>
+        <img class="home-image" src="home.png?v=2" alt="Cinq Rois">
+      </div>
+
+      <div class="actions">
+        <button class="btn" onclick="goSetup()">Lancer une partie</button>
+        <button id="resumeBtn" class="btn secondary" onclick="resumeGame()" style="display:none;">Reprendre la partie</button>
+      </div>
     </section>
 
     <section id="setupScreen" class="screen">
@@ -510,7 +494,7 @@
 
     <section id="gameScreen" class="screen">
       <div class="topbar">
-        <button class="tiny-btn" onclick="confirmNewGame()">Nouvelle</button>
+        <button class="tiny-btn" onclick="openNewGameModal()">Nouvelle</button>
         <h1>Partie</h1>
         <button class="tiny-btn" onclick="openScoresModal()">Scores</button>
       </div>
@@ -536,7 +520,7 @@
 
       <div class="actions">
         <button id="nextRoundBtn" class="btn" onclick="validateRound()">Manche suivante</button>
-        <button id="returnToGameBtn" class="btn green" onclick="returnToCurrentRound()" style="display:none;">Retour à la partie</button>
+        <button id="returnToGameBtn" class="btn green" onclick="returnToCurrentRound()" style="display:none;">Retour sans enregistrer</button>
       </div>
     </section>
 
@@ -578,6 +562,7 @@
       <div id="chosenOrder" class="order-list"></div>
       <div class="actions">
         <button id="rollBtn" class="btn" onclick="rollFirstPlayer()">Lancer le tirage</button>
+        <button id="modalStartBtn" class="btn green" onclick="startGame()" style="display:none;">Commencer la partie</button>
         <button class="btn ghost" onclick="closeRandomModal()">Fermer</button>
       </div>
     </div>
@@ -596,6 +581,17 @@
       <h2>Modifier une manche</h2>
       <div id="editRoundsList" class="order-list"></div>
       <button class="btn ghost" onclick="closeEditRoundModal()" style="margin-top:14px;">Fermer</button>
+    </div>
+  </div>
+
+  <div id="newGameModal" class="modal-backdrop">
+    <div class="modal">
+      <h2>Nouvelle partie ?</h2>
+      <p class="hint">Tu vas quitter la partie en cours et revenir au début. Les scores non terminés seront effacés.</p>
+      <div class="actions">
+        <button class="btn" onclick="confirmNewGameYes()">Oui, recommencer</button>
+        <button class="btn ghost" onclick="closeNewGameModal()">Annuler</button>
+      </div>
     </div>
   </div>
 
@@ -656,6 +652,8 @@
         currentRound: 0,
         scores: []
       };
+      editingRoundIndex = null;
+      returnRoundIndex = null;
       renderPlayerInputs();
       showScreen("setupScreen");
     }
@@ -677,6 +675,7 @@
       const count = Number($("playerCount").value);
       const wrap = $("playersInputs");
       wrap.innerHTML = "";
+
       for (let i = 0; i < count; i++) {
         const row = document.createElement("div");
         row.className = "player-row";
@@ -687,6 +686,7 @@
         `;
         wrap.appendChild(row);
       }
+
       $("startGameBtn").disabled = true;
       $("setupError").classList.remove("active");
     }
@@ -704,6 +704,7 @@
       state.firstPlayerIndex = null;
       state.playOrder = [];
       $("startGameBtn").disabled = true;
+      $("selectedFirstPlayerCard").style.display = "none";
     }
 
     function getSetupPlayers() {
@@ -723,16 +724,20 @@
 
     function validatePlayers() {
       const players = getSetupPlayers();
+
       if (players.some(p => !p)) {
         showSetupError("Tous les prénoms doivent être remplis.");
         return null;
       }
+
       const normalized = players.map(p => p.toLowerCase());
       const unique = new Set(normalized);
+
       if (unique.size !== players.length) {
         showSetupError("Deux joueurs ont le même prénom. Ajoute une initiale pour éviter le bazar.");
         return null;
       }
+
       $("setupError").classList.remove("active");
       return players;
     }
@@ -740,10 +745,13 @@
     function openRandomModal() {
       const players = validatePlayers();
       if (!players) return;
+
       state.players = players;
       $("rollingName").textContent = "?";
       $("chosenOrder").innerHTML = "";
+      $("rollBtn").style.display = "block";
       $("rollBtn").disabled = false;
+      $("modalStartBtn").style.display = "none";
       $("randomModal").classList.add("active");
     }
 
@@ -755,10 +763,12 @@
     function rollFirstPlayer() {
       const players = state.players;
       if (!players.length) return;
+
       $("rollBtn").disabled = true;
 
       let ticks = 0;
       const maxTicks = 26 + Math.floor(Math.random() * 10);
+
       const interval = setInterval(() => {
         const fakeIndex = ticks % players.length;
         $("rollingName").textContent = players[fakeIndex];
@@ -766,12 +776,18 @@
 
         if (ticks >= maxTicks) {
           clearInterval(interval);
+
           const chosenIndex = cryptoRandomIndex(players.length);
           state.firstPlayerIndex = chosenIndex;
           state.playOrder = rotatePlayers(players, chosenIndex);
+
           $("rollingName").textContent = players[chosenIndex];
           renderChosenOrder();
+
           $("startGameBtn").disabled = false;
+          $("rollBtn").style.display = "none";
+          $("modalStartBtn").style.display = "block";
+
           saveState();
         }
       }, 90);
@@ -783,6 +799,7 @@
         window.crypto.getRandomValues(array);
         return array[0] % max;
       }
+
       return Math.floor(Math.random() * max);
     }
 
@@ -793,6 +810,7 @@
     function renderChosenOrder() {
       const wrap = $("chosenOrder");
       wrap.innerHTML = "";
+
       state.playOrder.forEach((name, i) => {
         const div = document.createElement("div");
         div.className = "order-item";
@@ -826,16 +844,23 @@
         showSetupError("Il faut d’abord définir le premier joueur.");
         return;
       }
+
       state.currentRound = 0;
       state.scores = [];
+      editingRoundIndex = null;
+      returnRoundIndex = null;
+
       saveState();
-      closeRandomModal();
+
+      $("randomModal").classList.remove("active");
+      renderSelectedFirstPlayer();
       renderGame();
       showScreen("gameScreen");
     }
 
     function renderGame() {
       const round = state.currentRound;
+
       $("roundLabel").textContent = `${round + 1} / ${TRUMPS.length}`;
       $("trumpLabel").textContent = TRUMPS[round];
 
@@ -843,12 +868,13 @@
       $("firstPlayerLabel").textContent = rotatedOrder[0] || "";
 
       if (editingRoundIndex !== null) {
-        $("nextRoundBtn").textContent = "Enregistrer les modifications";
+        $("nextRoundBtn").textContent = "Enregistrer et reprendre";
         $("returnToGameBtn").style.display = "block";
       } else {
         $("nextRoundBtn").textContent = round === TRUMPS.length - 1 ? "Fin de partie" : "Manche suivante";
         $("returnToGameBtn").style.display = "none";
       }
+
       $("gameError").classList.remove("active");
 
       const currentScores = state.scores[round] || {};
@@ -884,19 +910,25 @@
 
     function collectRoundScores() {
       const result = {};
+
       for (const name of state.playOrder) {
         const input = $("score_" + cssEscape(name));
-        const raw = input.value.trim();
+        const raw = input ? input.value.trim() : "";
+
         if (raw === "") return null;
+
         const n = Number(raw);
         if (!Number.isInteger(n) || n < 0) return null;
+
         result[name] = n;
       }
+
       return result;
     }
 
     function validateRound() {
       const scores = collectRoundScores();
+
       if (!scores) {
         showGameError("Tous les scores doivent être remplis avec un nombre entier positif ou zéro.");
         return;
@@ -906,10 +938,12 @@
 
       if (editingRoundIndex !== null) {
         saveState();
+
         const targetRound = returnRoundIndex;
         editingRoundIndex = null;
         returnRoundIndex = null;
         state.currentRound = targetRound;
+
         renderGame();
         return;
       }
@@ -932,17 +966,21 @@
     function getTotals() {
       const totals = {};
       state.players.forEach(p => totals[p] = 0);
+
       state.scores.forEach(round => {
         if (!round) return;
+
         Object.entries(round).forEach(([name, score]) => {
           totals[name] = (totals[name] || 0) + Number(score || 0);
         });
       });
+
       return totals;
     }
 
     function getRanking() {
       const totals = getTotals();
+
       return Object.entries(totals)
         .map(([name, total]) => ({ name, total }))
         .sort((a, b) => a.total - b.total || a.name.localeCompare(b.name, "fr"));
@@ -951,12 +989,14 @@
     function openScoresModal() {
       const list = $("scoresList");
       list.innerHTML = "";
+
       getRanking().forEach((item, i) => {
         const div = document.createElement("div");
         div.className = "rank-item";
         div.innerHTML = `<span>${i + 1}. ${item.name}</span><strong>${item.total} pts</strong>`;
         list.appendChild(div);
       });
+
       $("scoresModal").classList.add("active");
     }
 
@@ -967,6 +1007,7 @@
     function openEditRoundModal() {
       const list = $("editRoundsList");
       list.innerHTML = "";
+
       const max = Math.min(state.currentRound, TRUMPS.length - 1);
 
       if (max === 0 && !state.scores[0]) {
@@ -974,6 +1015,7 @@
       } else {
         for (let i = 0; i <= max; i++) {
           if (!state.scores[i]) continue;
+
           const btn = document.createElement("button");
           btn.className = "btn ghost";
           btn.textContent = `Modifier manche ${i + 1} - Atout ${TRUMPS[i]}`;
@@ -993,6 +1035,7 @@
       returnRoundIndex = state.currentRound;
       editingRoundIndex = index;
       state.currentRound = index;
+
       saveState();
       closeEditRoundModal();
       renderGame();
@@ -1076,9 +1119,12 @@
 
     function renderFinal() {
       const ranking = getRanking();
+
       const podium = $("podium");
       podium.innerHTML = "";
+
       const medals = ["🥇", "🥈", "🥉"];
+
       ranking.slice(0, 3).forEach((item, i) => {
         const div = document.createElement("div");
         div.className = "podium-card";
@@ -1092,6 +1138,7 @@
 
       const final = $("finalRanking");
       final.innerHTML = "";
+
       ranking.forEach((item, i) => {
         const div = document.createElement("div");
         div.className = "rank-item";
@@ -1102,14 +1149,22 @@
       renderHistory();
     }
 
-    function confirmNewGame() {
-      if (confirm("Supprimer la partie en cours et recommencer ?")) {
-        newGame();
-      }
+    function openNewGameModal() {
+      $("newGameModal").classList.add("active");
+    }
+
+    function closeNewGameModal() {
+      $("newGameModal").classList.remove("active");
+    }
+
+    function confirmNewGameYes() {
+      closeNewGameModal();
+      newGame();
     }
 
     function newGame() {
       localStorage.removeItem(STORAGE_KEY);
+
       state = {
         players: [],
         firstPlayerIndex: null,
@@ -1117,14 +1172,18 @@
         currentRound: 0,
         scores: []
       };
+
       editingRoundIndex = null;
       returnRoundIndex = null;
+
+      $("playerCount").value = "4";
       renderPlayerInputs();
       showScreen("homeScreen");
     }
 
     function replaySamePlayers() {
       const players = [...state.players];
+
       state = {
         players,
         firstPlayerIndex: null,
@@ -1132,9 +1191,12 @@
         currentRound: 0,
         scores: []
       };
+
       editingRoundIndex = null;
       returnRoundIndex = null;
+
       localStorage.removeItem(STORAGE_KEY);
+
       $("playerCount").value = String(players.length);
       renderPlayerInputs();
       $("selectedFirstPlayerCard").style.display = "none";
@@ -1144,6 +1206,7 @@
 
     function replayWithPlayerEdit() {
       const players = [...state.players];
+
       state = {
         players,
         firstPlayerIndex: null,
@@ -1151,9 +1214,12 @@
         currentRound: 0,
         scores: []
       };
+
       editingRoundIndex = null;
       returnRoundIndex = null;
+
       localStorage.removeItem(STORAGE_KEY);
+
       $("playerCount").value = String(players.length);
       renderPlayerInputs();
       $("selectedFirstPlayerCard").style.display = "none";
