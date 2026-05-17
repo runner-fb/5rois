@@ -245,12 +245,11 @@
     }
 
     .player-row {
-      display: grid;
-      grid-template-columns: 40px 1fr;
-      gap: 10px;
-      align-items: center;
-    }
-
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
     .badge {
       width: 40px;
       height: 40px;
@@ -689,9 +688,13 @@
         row.className = "player-row";
         const existingName = state.players[i] || "";
         row.innerHTML = `
-          <div class="badge">${i + 1}</div>
-          <input id="player_${i}" type="text" placeholder="Prénom joueur ${i + 1}" autocomplete="off" value="${escapeHtml(existingName)}" oninput="resetFirstPlayer()">
-        `;
+  <div class="badge">${i + 1}</div>
+  <input id="player_${i}" type="text" placeholder="Prénom joueur ${i + 1}" autocomplete="off" value="${escapeHtml(existingName)}" oninput="syncPlayersFromInputs(); resetFirstPlayer();">
+  <div style="display:flex;gap:6px;">
+    <button class="tiny-btn" type="button" onclick="movePlayer(${i}, -1)">↑</button>
+    <button class="tiny-btn" type="button" onclick="movePlayer(${i}, 1)">↓</button>
+  </div>
+`;
         wrap.appendChild(row);
       }
 
@@ -708,6 +711,33 @@
         .replace(/'/g, "&#039;");
     }
 
+function syncPlayersFromInputs() {
+  const count = Number($("playerCount").value);
+  const players = [];
+
+  for (let i = 0; i < count; i++) {
+    const input = $("player_" + i);
+    players.push(input ? input.value.trim() : "");
+  }
+
+  state.players = players;
+}
+
+function movePlayer(index, direction) {
+  syncPlayersFromInputs();
+
+  const newIndex = index + direction;
+
+  if (newIndex < 0 || newIndex >= state.players.length) return;
+
+  const temp = state.players[index];
+  state.players[index] = state.players[newIndex];
+  state.players[newIndex] = temp;
+
+  resetFirstPlayer();
+  renderPlayerInputs();
+}
+    
     function resetFirstPlayer() {
       state.firstPlayerIndex = null;
       state.playOrder = [];
