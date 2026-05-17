@@ -550,8 +550,12 @@
 </div>
 
       <div class="card soft">
-        <div id="historyList" class="order-list"></div>
-      </div>
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+    <h2 style="margin:0;color:var(--bg-dark);">Historique des parties</h2>
+    <button class="tiny-btn" onclick="clearHistory()">RAZ</button>
+  </div>
+  <div id="historyList" class="order-list"></div>
+</div>
 
       <div class="actions">
         <button class="btn" onclick="newGame()">Nouvelle partie</button>
@@ -1252,6 +1256,8 @@ function renderAllScoresTable() {
 
       $("playerCount").value = "4";
       renderPlayerInputs();
+      $("selectedFirstPlayerCard").style.display = "none";
+$("startGameBtn").disabled = true;
       showScreen("homeScreen");
     }
 
