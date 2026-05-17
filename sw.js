@@ -1,4 +1,4 @@
-const CACHE_NAME = "score-multijeux-v4";
+const CACHE_NAME = "score-multijeux-v5";
 
 const urlsToCache = [
   "./",
