@@ -64,6 +64,12 @@
       flex-direction: column;
     }
 
+.history-btn {
+  background: var(--bg-main) !important;
+  color: white !important;
+  border: 2px solid var(--yellow-main) !important;
+}
+    
   .move-btn {
   width: 38px !important;
   height: 38px !important;
@@ -574,15 +580,15 @@
       <div class="card soft">
   <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
     <h2 style="margin:0;color:var(--bg-dark);">Historique des parties</h2>
-    <button class="tiny-btn" onclick="clearHistory()">RAZ</button>
+    <button class="tiny-btn history-btn" onclick="clearHistory()">RAZ</button>
   </div>
   <div id="historyList" class="order-list"></div>
 </div>
 
       <div class="actions">
-        <button class="btn" onclick="newGame()">Nouvelle partie</button>
         <button class="btn green" onclick="replaySamePlayers()">Refaire une partie (même joueurs)</button>
         <button class="btn secondary" onclick="replayWithPlayerEdit()">Relancer en ajoutant des joueurs</button>
+        <button class="btn" onclick="newGame()">Nouvelle partie</button>
       </div>
     </section>
   </main>
