@@ -341,11 +341,11 @@
     }
 
     .actions {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-top: 8px;
-    }
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
 
     .modal-backdrop {
       position: fixed;
@@ -542,13 +542,21 @@
       </div>
 
       <div class="card soft">
-        <h2 style="margin-top:0;color:var(--bg-dark);">Historique des parties</h2>
+  <details>
+    <summary style="font-weight:950;color:var(--bg-dark);cursor:pointer;">
+      Voir tous les scores
+    </summary>
+    <div id="allScoresTable" style="margin-top:12px;overflow-x:auto;"></div>
+  </details>
+</div>
+
+      <div class="card soft">
         <div id="historyList" class="order-list"></div>
       </div>
 
       <div class="actions">
         <button class="btn" onclick="newGame()">Nouvelle partie</button>
-        <button class="btn green" onclick="replaySamePlayers()">Refaire une partie</button>
+        <button class="btn green" onclick="replaySamePlayers()">Refaire une partie (même joueurs)</button>
         <button class="btn secondary" onclick="replayWithPlayerEdit()">Relancer en ajoutant des joueurs</button>
       </div>
     </section>
@@ -562,8 +570,8 @@
       <div id="chosenOrder" class="order-list"></div>
       <div class="actions">
         <button id="rollBtn" class="btn" onclick="rollFirstPlayer()">Lancer le tirage</button>
-        <button id="modalStartBtn" class="btn green" onclick="startGame()" style="display:none;">Commencer la partie</button>
-        <button class="btn ghost" onclick="closeRandomModal()">Fermer</button>
+<button id="modalStartBtn" class="btn green" onclick="startGame()" style="display:none;">Lancer la partie</button>
+<button class="btn ghost" onclick="closeRandomModal()">Fermer</button>
       </div>
     </div>
   </div>
@@ -784,6 +792,7 @@
           $("rollingName").textContent = players[chosenIndex];
           renderChosenOrder();
 
+          $("startGameBtn").disabled = false;
           $("startGameBtn").disabled = false;
           $("rollBtn").style.display = "none";
           $("modalStartBtn").style.display = "block";
@@ -1117,6 +1126,40 @@
       });
     }
 
+function renderAllScoresTable() {
+  const wrap = $("allScoresTable");
+  if (!wrap) return;
+
+  let html = `
+    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+      <thead>
+        <tr>
+          <th style="text-align:left;border-bottom:2px solid #d9e2ec;padding:6px;">Manche</th>
+  `;
+
+  state.players.forEach(name => {
+    html += `<th style="text-align:center;border-bottom:2px solid #d9e2ec;padding:6px;">${name}</th>`;
+  });
+
+  html += `</tr></thead><tbody>`;
+
+  state.scores.forEach((round, index) => {
+    html += `<tr>
+      <td style="font-weight:900;padding:6px;border-bottom:1px solid #d9e2ec;">${index + 1}</td>
+    `;
+
+    state.players.forEach(name => {
+      const score = round?.[name] ?? "";
+      html += `<td style="text-align:center;padding:6px;border-bottom:1px solid #d9e2ec;">${score}</td>`;
+    });
+
+    html += `</tr>`;
+  });
+
+  html += `</tbody></table>`;
+  wrap.innerHTML = html;
+}    
+
     function renderFinal() {
       const ranking = getRanking();
 
@@ -1147,6 +1190,7 @@
       });
 
       renderHistory();
+      renderAllScoresTable();
     }
 
     function openNewGameModal() {
@@ -1226,6 +1270,14 @@
       $("startGameBtn").disabled = true;
       showScreen("setupScreen");
     }
+
+    function clearHistory() {
+  if (!confirm("Effacer tout l’historique des parties ?")) return;
+
+  localStorage.removeItem(HISTORY_KEY);
+
+  renderHistory();
+}
 
     document.querySelectorAll(".modal-backdrop").forEach(backdrop => {
       backdrop.addEventListener("click", e => {
