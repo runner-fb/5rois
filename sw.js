@@ -1,31 +1,40 @@
-const CACHE_NAME = "cinq-rois-v1";
+const CACHE_NAME = "score-multijeux-v2";
 
-const FILES_TO_CACHE = [
+const urlsToCache = [
   "./",
   "./index.html",
-  "./manifest.json"
+  "./manifest.json",
+  "./home.png"
 ];
 
 self.addEventListener("install", event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(FILES_TO_CACHE))
+    caches.open(CACHE_NAME).then(cache => {
+      return cache.addAll(urlsToCache);
+    })
   );
+
   self.skipWaiting();
 });
 
 self.addEventListener("activate", event => {
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
-        keys.map(key => key !== CACHE_NAME ? caches.delete(key) : null)
-      )
-    )
+    caches.keys().then(keys => {
+      return Promise.all(
+        keys
+          .filter(key => key !== CACHE_NAME)
+          .map(key => caches.delete(key))
+      );
+    })
   );
+
   self.clients.claim();
 });
 
 self.addEventListener("fetch", event => {
   event.respondWith(
-    caches.match(event.request).then(response => response || fetch(event.request))
+    caches.match(event.request).then(response => {
+      return response || fetch(event.request);
+    })
   );
 });
