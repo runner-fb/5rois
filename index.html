@@ -64,6 +64,17 @@
       flex-direction: column;
     }
 
+   .move-btn {
+  min-width: 34px;
+  min-height: 34px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  background: var(--bg-main);
+  color: white;
+  border: 2px solid var(--yellow-main);
+  font-weight: 950;
+}
+
     .screen {
       display: none;
       flex: 1;
@@ -695,8 +706,8 @@
   <div class="badge">${i + 1}</div>
   <input id="player_${i}" type="text" placeholder="Prénom joueur ${i + 1}" autocomplete="off" value="${escapeHtml(existingName)}" oninput="syncPlayersFromInputs(); resetFirstPlayer();">
   <div style="display:flex;gap:6px;">
-    <button class="tiny-btn" type="button" onclick="movePlayer(${i}, -1)">↑</button>
-    <button class="tiny-btn" type="button" onclick="movePlayer(${i}, 1)">↓</button>
+    <button class="move-btn" type="button" onclick="movePlayer(${i}, -1)">↑</button>
+<button class="move-btn" type="button" onclick="movePlayer(${i}, 1)">↓</button>
   </div>
 `;
         wrap.appendChild(row);
